@@ -1,25 +1,39 @@
 import os
+from functools import wraps
 from dotenv import load_dotenv
 
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
+from sqlalchemy.pool import NullPool
 
 load_dotenv()
 POSTGRES_USER = os.getenv('POSTGRES_USER')
 POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+POSTGRES_DB = os.getenv('POSTGRES_DB')
+TESTING = os.getenv('TESTING')
 
-engine = create_async_engine(f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost/rpg_bot")
-async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+if TESTING:
+    PORT = os.getenv('DB_PORT_test')
+else:
+    PORT = os.getenv('DB_PORT')
 
-async def get_session():
-    return async_session()
+engine = create_async_engine(
+    f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:{PORT}/{POSTGRES_DB}",
+    poolclass=NullPool) #без этого путаются eventpolls от pytest и алхимии, лол
 
+async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
-if __name__ == "__main__":
-    import asyncio
-    asyncio.run(get_session())
+def connection(method):
+    async def wrapper(*args, **kwargs):
+        async with async_session_maker() as session:
+            try:
+                return await method(session,*args, **kwargs)
+            except Exception as e:
+                await session.rollback()
+                raise e
+            finally:
+                await session.close()
+
+    return wrapper
