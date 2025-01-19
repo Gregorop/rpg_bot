@@ -1,3 +1,5 @@
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.ext.asyncio import AsyncAttrs
 
-Base = declarative_base()
+class Base(AsyncAttrs, DeclarativeBase):
+    pass

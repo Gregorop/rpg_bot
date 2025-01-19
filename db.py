@@ -24,16 +24,3 @@ engine = create_async_engine(
     poolclass=NullPool) #без этого путаются eventpolls от pytest и алхимии, лол
 
 async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-
-def connection(method):
-    async def wrapper(*args, **kwargs):
-        async with async_session_maker() as session:
-            try:
-                return await method(session,*args, **kwargs)
-            except Exception as e:
-                await session.rollback()
-                raise e
-            finally:
-                await session.close()
-
-    return wrapper

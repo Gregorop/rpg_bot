@@ -6,6 +6,7 @@ from models import User
 
 @pytest.mark.asyncio
 async def test_clean_up(session,setup_db):
+    '''setup_db нужно вписать хоть в 1 тест, чтобы фикстура запустилась'''
     #база вообще жива?
     result = await session.execute(text("SELECT 1"))
     one = result.scalar_one_or_none()
