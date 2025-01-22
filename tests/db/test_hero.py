@@ -12,9 +12,15 @@ class TestHero:
         await session.commit()
         await session.refresh(user)
         
-        hero = await Hero.add_hero(session, user.pk, avatar_id, 'aboba')
+        hero = await Hero.first_spawn_hero(session, user.pk, avatar_id, 'aboba')
         await session.refresh(user)
+
         heroes = await user.awaitable_attrs.heroes
         assert len(heroes) == 1
+
         assert heroes[0].nickname == 'aboba'
         assert hero.energy == 100
+
+        hero_0_Maptiles = await heroes[0].awaitable_attrs.map_tile
+        hero_0_Maptile_tile = hero_0_Maptiles[0].tile
+        assert hero_0_Maptile_tile.name == 'grass'

@@ -1,7 +1,7 @@
 from sqlalchemy import Column, ForeignKey, BigInteger, String, Integer
 from sqlalchemy.orm import relationship
 
-from models import Base, User
+from models import Base, User, Map
 
 class Hero(Base):
     __tablename__ = "hero_table"
@@ -18,7 +18,15 @@ class Hero(Base):
     def __repr__(self) -> str:
         return f"{self.nickname}, энергии {self.energy}"
 
-    async def add_hero(session, owner_id, avatar_id, nick):
+    async def first_spawn_hero(session, owner_id, avatar_id, nick):
         hero = Hero(owner_id=owner_id, avatar_file_in_tg_id=avatar_id, nickname=nick)
         session.add(hero)
+        await session.commit()
+        await session.refresh(hero)
+
+        map_tile = await Map.get_free_mapTile(session,'grass')
+        map_tile.hero_id = hero.pk
+        session.add(map_tile)
+        await session.commit()
+
         return hero
