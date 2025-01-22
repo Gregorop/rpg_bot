@@ -1,12 +1,10 @@
 import pytest
 from sqlalchemy import text, select
-
 from models import User
 
 
 @pytest.mark.asyncio
-async def test_clean_up(session,setup_db):
-    '''setup_db нужно вписать хоть в 1 тест, чтобы фикстура запустилась'''
+async def test_clean_up(session):
     #база вообще жива?
     result = await session.execute(text("SELECT 1"))
     one = result.scalar_one_or_none()
@@ -15,3 +13,4 @@ async def test_clean_up(session,setup_db):
     result = await session.execute(select(User))
     res = result.scalars().all()
     assert len(res) == 0
+
