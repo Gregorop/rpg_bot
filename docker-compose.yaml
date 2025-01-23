@@ -6,8 +6,8 @@ services:
     ports:
       - ${DB_PORT}:5432
     environment:
-      - POSTGRES_PASSWORD
-      - POSTGRES_USER
+      - POSTGRES_PASSWORD=${PASSWORD}
+      - POSTGRES_USER=${USER}
       - POSTGRES_DB
     image: postgres:14.3-alpine
     volumes:
@@ -18,13 +18,26 @@ services:
     ports:
       - ${DB_PORT_test}:5432
     environment:
-      - POSTGRES_PASSWORD
-      - POSTGRES_USER
+      - POSTGRES_PASSWORD=${PASSWORD}
+      - POSTGRES_USER=${USER}
       - POSTGRES_DB
     image: postgres:14.3-alpine
     volumes:
       - rpg_test_data:/var/lib/postgresql/data  
   
+  rpg_rabbit:
+    container_name: rpg_rabbit
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      - RABBITMQ_DEFAULT_USER=${USER}
+      - RABBITMQ_DEFAULT_PASS=${PASSWORD}
+    image: rabbitmq:management
+    volumes:
+      - rpg_rabbit:/var/lib/rabbitmq
+
 volumes:
   rpg_bot_data:
   rpg_test_data:
+  rpg_rabbit:
