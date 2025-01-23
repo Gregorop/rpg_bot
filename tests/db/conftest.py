@@ -1,6 +1,6 @@
 import pytest_asyncio
 
-from db import engine, async_session_maker
+from _db import engine, async_session_maker
 from models import Base
 
 @pytest_asyncio.fixture(autouse=True)
